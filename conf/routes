@@ -1,0 +1,9 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# https://www.playframework.com/documentation/latest/ScalaRouting
+# ~~~~
+
+GET     /                           controllers.AppController.app
+GET     /healthz                    controllers.HealthController.health
+GET     /api/rooms                  controllers.RoomController.rooms
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

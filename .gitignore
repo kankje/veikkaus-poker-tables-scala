@@ -1,0 +1,29 @@
+# dev
+.idea
+.DS_Store
+
+
+# front
+yarn-error.log
+node_modules/
+dist/
+
+# credentials
+twitter4j.properties
+
+# scala
+bin/
+/db
+.eclipse
+/lib/
+/logs/
+/modules
+/project/project
+/project/target
+/target
+tmp/
+test-result
+server.pid
+*.eml
+/dist/
+.cache
