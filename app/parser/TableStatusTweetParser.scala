@@ -131,16 +131,16 @@ class TableStatusTweetParser {
 
   private def parseFinnishNumber(content: String, suffix: String, prefix: String): Option[Int] = {
     val numberRegExps = List(
-      ("(yksi)", 1),
-      ("(kaksi)", 2),
-      ("(kolme)", 3),
-      ("(neljä)", 4),
-      ("(viisi)", 5),
-      ("(kuusi)", 6),
-      ("(seitsemän)", 7),
-      ("(kahdeksan)", 8),
-      ("(yhdeksän)", 9),
-      ("(kymmenen)", 10),
+      ("(yksi|yhden|yhtä)", 1),
+      ("(kaksi|kahden|kahta)", 2),
+      ("(kolme|kolmen|kolmea)", 3),
+      ("(neljä|neljän|neljää)", 4),
+      ("(viisi|viiden|viittä)", 5),
+      ("(kuusi|kuuden|kuutta)", 6),
+      ("(seitsemän|seitsemää)", 7),
+      ("(kahdeksan|kahdeksaa)", 8),
+      ("(yhdeksän|yhdeksää)", 9),
+      ("(kymmenen|yhden|yhtä)", 10),
     )
 
     val suffixMatches = s"(?i)(\\d+)\\s*$suffix".r.findAllIn(content)
