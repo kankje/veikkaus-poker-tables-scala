@@ -40,11 +40,11 @@ class TableStatusTweetParser {
   )
 
   def parseTables(content: String, updatedAt: Date): List[Table] = {
-    val lines = content.split("\n")
+    val lines = content.split("""(\n|\. )""")
 
     lines
       .filter(line => parseGameType(line).isDefined)
-      .map(line => new Table(
+      .map(line => Table(
         parseRoomName(content),
         parseGameType(line),
         parseStakes(line),
@@ -112,32 +112,20 @@ class TableStatusTweetParser {
   }
 
   private def parseStakes(content: String): Option[(Float, Float)] = {
-    val stakesPattern = "(?i)([0-9.,]+)[/-]([0-9.,]+)".r
+    val contentWithoutPlo45 = content.replace("4/5", "")
+    val pattern = "([0-9]+(?:[.,][0-9]+)?)[/-]([0-9]+(?:[.,][0-9]+)?)".r.unanchored
 
-    val firstMatches = stakesPattern.findAllIn(content)
-    println(firstMatches.toList)
-
-    // TODO: Clean.
-    if (firstMatches.size > 1) {
-      val secondMatches = stakesPattern.findAllIn(firstMatches.group(1))
-      if (secondMatches.size < 1) {
-        Some((
-          secondMatches.group(0).replace(",", ".").replaceAll("[^0-9.]", "").toFloat,
-          secondMatches.group(1).replace(",", ".").replaceAll("[^0-9.]", "").toFloat,
-        ))
-      } else {
-        None
-      }
-    } else {
-      None
+    contentWithoutPlo45 match {
+      case pattern(smallBlind, bigBlind) => Some((parseFloat(smallBlind), parseFloat(bigBlind)))
+      case _ => None
     }
   }
 
   private def parseFinnishNumber(content: String, suffix: String, prefix: String): Option[Int] = {
     val numberRegExps = List(
       ("(yksi|yhden|yhtä)", 1),
-      ("(kaksi|kahden|kahta)", 2),
-      ("(kolme|kolmen|kolmea)", 3),
+      ("(kaksi|kahden|kahta|pari)", 2),
+      ("(kolme|kolmen|kolmea|muutama)", 3),
       ("(neljä|neljän|neljää)", 4),
       ("(viisi|viiden|viittä)", 5),
       ("(kuusi|kuuden|kuutta)", 6),
@@ -147,23 +135,23 @@ class TableStatusTweetParser {
       ("(kymmenen|yhden|yhtä)", 10),
     )
 
-    val suffixMatches = s"(?i)(\\d+)\\s*$suffix".r.findAllIn(content)
+    val suffixMatches = s"(?i)(\\d+)\\s*$suffix".r.unanchored.findAllIn(content)
     if (suffixMatches.nonEmpty) {
-      return Some(suffixMatches.group(0).replaceAll("[^0-9]", "").toInt)
+      return Some(parseInt(suffixMatches.group(1)))
     }
 
-    val prefixMatches = s"(?i)$prefix\\s*(\\d+)".r.findAllIn(content)
+    val prefixMatches = s"(?i)$prefix\\s*(\\d+)".r.unanchored.findAllIn(content)
     if (prefixMatches.nonEmpty) {
-      return Some(prefixMatches.group(0).replaceAll("[^0-9]", "").toInt)
+      return Some(parseInt(prefixMatches.group(1)))
     }
 
     numberRegExps.foreach(re => {
-      val prefixNumberMatches = s"(?i)$prefix\\s*${re._1}".r.findAllIn(content)
+      val prefixNumberMatches = s"(?i)$prefix\\s*${re._1}".r.unanchored.findAllIn(content)
       if (prefixNumberMatches.nonEmpty) {
         return Some(re._2)
       }
 
-      val suffixNumberMatches = s"(?i)${re._1}\\s*$suffix".r.findAllIn(content)
+      val suffixNumberMatches = s"(?i)${re._1}\\s*$suffix".r.unanchored.findAllIn(content)
       if (suffixNumberMatches.nonEmpty) {
         return Some(re._2)
       }
@@ -173,10 +161,14 @@ class TableStatusTweetParser {
   }
 
   private def parseTableCount(content: String): Int = {
-    val matches = "(?i)(\\d+)x".r.findAllIn(content)
+    if (parseInterested(content) > 0) {
+      return 0
+    }
+
+    val matches = "(?i)(\\d+)x".r.unanchored.findAllIn(content)
 
     if (matches.nonEmpty) {
-      matches.group(0).replaceAll("[^0-9]", "").toInt
+      parseInt(matches.group(1))
     } else {
       parseFinnishNumber(content, "pöytä", "pöytiä")
         .orElse(Some(1))
@@ -206,5 +198,13 @@ class TableStatusTweetParser {
 
   private def parseIsNew(content: String): Boolean = {
     content.contains("aukesi") || content.contains("uusi")
+  }
+
+  private def parseInt(s: String): Int = {
+    s.replaceAll ("[^0-9]", "").toInt
+  }
+
+  private def parseFloat(s: String): Float = {
+    s.replace(",", ".").replaceAll ("[^0-9.]", "").toFloat
   }
 }
