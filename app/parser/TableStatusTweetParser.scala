@@ -33,8 +33,10 @@ class TableStatusTweetParser {
   )
   val GameTypes = Map(
     "TEXAS_HOLDEM" -> "NLHE",
+    "POT_LIMIT_OMAHA_4" -> "PLO4",
     "POT_LIMIT_OMAHA_5" -> "PLO5",
     "POT_LIMIT_OMAHA_4_5" -> "PLO4/5",
+    "DEALERS_CHOICE" -> "DC",
   )
 
   def parseTables(content: String, updatedAt: Date): List[Table] = {
@@ -97,8 +99,10 @@ class TableStatusTweetParser {
       ("tx", GameTypes("TEXAS_HOLDEM")),
       ("nl", GameTypes("TEXAS_HOLDEM")),
       ("plo4/5", GameTypes("POT_LIMIT_OMAHA_4_5")),
+      ("plo4", GameTypes("POT_LIMIT_OMAHA_4")),
       ("plo5", GameTypes("POT_LIMIT_OMAHA_5")),
       ("plo", GameTypes("POT_LIMIT_OMAHA_4_5")),
+      ("dc", GameTypes("DEALERS_CHOICE")),
     )
 
     keywordToGameType.find(item => content.toLowerCase().contains(item._1)) match {
