@@ -52,6 +52,7 @@ class TableStatusTweetParser {
         parseIsNew(line),
         updatedAt
       ))
+      .filter(table => table.roomName.isDefined)
       .toList
   }
 
