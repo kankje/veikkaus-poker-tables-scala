@@ -14,9 +14,6 @@ case class Table(
   updatedAt: Date,
 )
 
-/**
- * TODO: Test.
- */
 class TableStatusTweetParser {
   // TODO: There's probably a better way to do these.
   val RoomNames = Map(
